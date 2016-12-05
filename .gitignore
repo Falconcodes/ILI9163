@@ -67,3 +67,10 @@ Debug/dosator.obj
 *.prj
 *.prj~
 *.txt
+*.hex
+Debug/Exe/spi.ol
+*.obj
+*.hci
+*.h~
+*.obj
+*.ol
