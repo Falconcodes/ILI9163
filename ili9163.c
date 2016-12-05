@@ -39,12 +39,12 @@ CS=0;
 spi(0x11);
 CS=1;
 
-//настройка режима направления заполнени экрана и порядка R-G-B
+//настройка режима направления заполнения экрана и порядка R-G-B
 lcd_com(0x36);
 lcd_send(0b11001000);
 
 lcd_com(0x3A);
-lcd_send(0b01010110);
+lcd_send(0b01100110);
   
   DC=0;
   CS=0;
@@ -66,12 +66,12 @@ delay_us(10);
 while (1)
  {
  //lcd_com(0x10);
- lcd_fill(0, 63, 0);
+ lcd_fill(4, 4, 4);
  //lcd_com(0x11);
- delay_ms(500);
- lcd_fill(0, 0, 63);
- delay_ms(500);
- lcd_fill(63, 0, 0);
- delay_ms(500);
+ delay_ms(1000);
+ lcd_fill(56, 56, 56);
+ delay_ms(1000);
+ lcd_fill(56, 0, 0);
+ delay_ms(1000);
  }
 }
