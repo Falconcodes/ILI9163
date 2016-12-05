@@ -43,8 +43,8 @@ CS=1;
 lcd_com(0x36);
 lcd_send(0b11001000);
 
-//lcd_com(0x3A);
-//lcd_send(0b01010101);
+lcd_com(0x3A);
+lcd_send(0b01010110);
   
   DC=0;
   CS=0;
