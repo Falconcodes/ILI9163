@@ -5,13 +5,14 @@
 #include <spi.h>
 #include <delay.h>
 #include <ascii.h>
+#include <ascii_ru.h>
 #include <ili9163.h>
 #include <stdio.h>
 
 unsigned int i;
-unsigned char string[16] = "";
+unsigned char string[STRING_LENGHT];
 
-unsigned int pH=5;
+unsigned int pH=5, time=0;
 
 void main(void)
 {
@@ -66,16 +67,47 @@ lcd_send(0b01100101);
   DC=0;
   CS=1; 
   
-lcd_fill(2,0,0);
+lcd_fill(1,1,1);
 
-text_color(31,31,0);
-bg_color(0,0,0);
+text_color(31,55,20);
+bg_color(1,1,1);
+
+string[1]='\0';
+sprintf(string, "Уст.pH=     ");
+lcd_type(0, 0, string);
+sprintf(string, "Уст.t'=    C");
+lcd_type(2, 0, string);
+sprintf(string, "Тек.pH=     ");
+lcd_type(1, 0, string);
+sprintf(string, "Тек.t'=    С");
+lcd_type(3, 0, string);
+sprintf(string, "Время:      ");
+lcd_type(4, 0, string);
+sprintf(string, "Прогр.:    %%");
+lcd_type(5, 0, string);
 
 while(1){
-sprintf(string, "Hello! pH=%i", pH);
-lcd_type(10, 1, string);
-pH++;
-delay_ms(100);
+string[1]='\0';
+sprintf(string, "%i", time);
+lcd_type(0, 8, string);
+string[1]='\0';
+sprintf(string, "%i", time);
+lcd_type(1, 8, string);
+string[1]='\0';
+sprintf(string, "%i", time);
+lcd_type(2, 8, string);
+string[1]='\0';
+sprintf(string, "%i", time);
+lcd_type(3, 8, string);
+string[1]='\0';
+sprintf(string, "%i", time);
+lcd_type(4, 7, string);
+string[1]='\0';
+sprintf(string, "%i", 23);
+lcd_type(5, 8, string);
+//pH++;
+time++;
+//delay_ms(1);
 };
 
 //while (1)
