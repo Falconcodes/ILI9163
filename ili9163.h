@@ -59,8 +59,27 @@ void lcd_fill(unsigned char red, unsigned char green, unsigned char blue) {
   CS=1;
 }
 
-//задать диапазон по Y для вывода (номера строк начала и конца)
-void lcd_y_band (unsigned char start, unsigned char end){
+void lcd_test_fill(unsigned char red, unsigned char green, unsigned char blue) { 
+  unsigned int i;
+  unsigned char spi_1, spi_2;
+  spi_1 = (red<<3) + (green>>3);
+  spi_2 = ((green & 0b00011111)<<5) + blue; 
+   
+  CS=0;
+  spi(0x2C);                                                                                                
+  DC=1;
+     
+  for (i=0; i<16384; i++){
+  spi(spi_1); //first byte
+  spi(spi_2); //second byte
+  delay_us(10000);
+  }
+  DC=0;
+  CS=1;
+}
+
+//задать диапазон по X для вывода (номера столбцов пикселей начала и конца вывода)
+void lcd_x_band (unsigned char start, unsigned char end){
   lcd_com(0x2B);
   lcd_send(0);
   lcd_send(start);
@@ -68,8 +87,8 @@ void lcd_y_band (unsigned char start, unsigned char end){
   lcd_send(end);
 }
 
-//задать диапазон по X для вывода (номера строк начала и конца)
-void lcd_x_band (unsigned char start, unsigned char end){
+//задать диапазон по Y для вывода (номера строк пикселей начала и конца)
+void lcd_y_band (unsigned char start, unsigned char end){
   lcd_com(0x2A);
   lcd_send(0);
   lcd_send(start);
@@ -145,6 +164,65 @@ void lcd_type(unsigned char y, unsigned char x, unsigned char text[16]) {
  DC=0;
  CS=1;
 }
+
+
+lcd_test_typechar(unsigned char char_code){
+unsigned char i, char_column, column_pix;
+lcd_fill(1,1,1);
+lcd_x_band(0, 127);
+lcd_y_band(0, 7);
+   CS=0;
+   spi(0x2C);                                                                                                
+   DC=1;
+ 
+ for (char_column=1;char_column<9;char_column++) { //цикл отрисовки символа по столбцам
+   for (column_pix=0;column_pix<8;column_pix++){
+     if((ru1251[char_code-1][char_column]) & (1<<column_pix))
+       {
+        spi(text_color_1);
+        spi(text_color_2);
+       }
+       else 
+       {
+        spi(bg_color_1);
+        spi(bg_color_2);
+       }
+   }   
+ }
+
+DC=0;
+CS=1;
+};
+
+lcd_typestring(unsigned char y, unsigned char x, unsigned char text[16]){
+unsigned char i, char_column, column_pix, posit;
+lcd_y_band(8*y, 8*y+7);
+lcd_x_band(8*x, 127);
+   CS=0;
+   spi(0x2C);                                                                                                
+   DC=1;
+ for (posit=0; posit<(16); posit++){  //цикл вывода символов по очереди
+// DC=0;
+// lcd_x_band(CHAR_HOR*x+CHAR_HOR*posit, CHAR_HOR*x+CHAR_HOR-1+CHAR_HOR*posit);
+ sym_code=text[posit]-0x20;
+  for (char_column=1;char_column<9;char_column++) { //цикл отрисовки символа по столбцам
+   for (column_pix=0;column_pix<8;column_pix++){
+     if((ru1251[sym_code][char_column]) & (1<<column_pix))
+       {
+        spi(text_color_1);
+        spi(text_color_2);
+       }
+       else 
+       {
+        spi(bg_color_1);
+        spi(bg_color_2);
+       }
+   }   
+  }
+ }
+DC=0;
+CS=1;
+};
 
 ////Функция - вывод в строку
 //void lcd_type(unsigned char y, unsigned char x, unsigned char text[16]) {

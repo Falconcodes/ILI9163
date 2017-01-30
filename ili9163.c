@@ -4,8 +4,8 @@
 #include <mega328p.h>
 #include <spi.h>
 #include <delay.h>
-#include <ascii.h>
 #include <ascii_ru.h>
+#include <ru1251.h>
 #include <ili9163.h>
 #include <stdio.h>
 
@@ -44,14 +44,14 @@ CS=1;
 lcd_com(0x11);
 
 //настройка режима направления заполнения экрана и порядка R-G-B
+//нормальное положение экрана - стороной со штырьками вверх
 lcd_com(0x36);
-lcd_send(0b11001000);
+lcd_send(0b11101000);
 
+//количество цветов (уст.65536 = 16 бит RGB)
 lcd_com(0x3A);
 lcd_send(0b01100101);
 
-//lcd_com(0x3A);  //битность RGB 12-16-18
-//lcd_send(0b00000110);
   
   DC=0;
   CS=0;
@@ -71,6 +71,16 @@ lcd_fill(1,1,1);
 
 text_color(31,55,20);
 bg_color(1,1,1);
+
+//lcd_x_band(0,127);
+//lcd_y_band(0,127);
+//lcd_fill(1,30,1);
+
+//sprintf(string, "Уст.pH=        ");
+//lcd_typestring(1, 1, string);
+
+lcd_test_typechar(175);
+while(1);
 
 string[1]='\0';
 sprintf(string, "Уст.pH=     ");
