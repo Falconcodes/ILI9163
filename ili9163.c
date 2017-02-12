@@ -1,16 +1,22 @@
 /*******************************************************
 *******************************************************/
 
+#define CHAR_ARRAY_NAME verd_14
+#define BYTES_PER_CHAR 29  //ширина массива с растровым шрифтом, подключаемого ниже include-ом
+#define CHAR_HEIGHT 14//высота символа в пикселях...
+#define CHAR_WIGHT 14  // ... и его ширина
+
 #include <mega328p.h>
 #include <spi.h>
 #include <delay.h>
-#include <ascii_ru.h>
-#include <ru1251.h>
-#include <ili9163.h>
 #include <stdio.h>
+#include <verd_14.h>
+
+#include <ili9163.h>
+
 
 unsigned int i;
-unsigned char string[STRING_LENGHT];
+unsigned char string[16];
 
 unsigned int pH=5, time=0;
 
@@ -69,71 +75,63 @@ lcd_send(0b01100101);
   
 lcd_fill(1,1,1);
 
-text_color(31,55,20);
-bg_color(1,1,1);
+text_color(20,20,5);
+bg_color(1,1,2);
 
-//lcd_x_band(0,127);
-//lcd_y_band(0,127);
-//lcd_fill(1,30,1);
+////lcd_test_typechar(5);
+//sprintf(string, "                ");
+////while(1);
+//sprintf(string, "Уст. pH = 5.24");
+//lcd_test_typechar(string[0]-30);
+//lcd_type(3, 0, string);
 
-//sprintf(string, "Уст.pH=        ");
-//lcd_typestring(1, 1, string);
 
-lcd_test_typechar(175);
-while(1);
-
-string[1]='\0';
-sprintf(string, "Уст.pH=     ");
+sprintf(string, "Уст. рН=");
 lcd_type(0, 0, string);
-sprintf(string, "Уст.t'=    C");
-lcd_type(2, 0, string);
-sprintf(string, "Тек.pH=     ");
+sprintf(string, "Тек. pH=");
 lcd_type(1, 0, string);
-sprintf(string, "Тек.t'=    С");
+sprintf(string, "Уст. t'=      *С");
+lcd_type(2, 0, string);
+sprintf(string, "Тек. t'=      *С");
 lcd_type(3, 0, string);
-sprintf(string, "Время:      ");
+sprintf(string, "Время:");
 lcd_type(4, 0, string);
-sprintf(string, "Прогр.:    %%");
+sprintf(string, "Прогр.:");
 lcd_type(5, 0, string);
+sprintf(string, "Еще 1:");
+lcd_type(6, 0, string);
+sprintf(string, "Еще 2:");
+lcd_type(7, 0, string);
+sprintf(string, "Еще 3:");
+lcd_type(8, 0, string);
 
 while(1){
-string[1]='\0';
-sprintf(string, "%i", time);
-lcd_type(0, 8, string);
-string[1]='\0';
-sprintf(string, "%i", time);
-lcd_type(1, 8, string);
-string[1]='\0';
-sprintf(string, "%i", time);
+sprintf(string, "%i ", time);
+lcd_type(0, 9, string);
+//sprintf(string, "%i ", time);
+lcd_type(1, 9, string);
+//sprintf(string, "%i ", time);
 lcd_type(2, 8, string);
-string[1]='\0';
-sprintf(string, "%i", time);
+//sprintf(string, "%i ", time);
 lcd_type(3, 8, string);
-string[1]='\0';
-sprintf(string, "%i", time);
+//sprintf(string, "%i ", time);
 lcd_type(4, 7, string);
-string[1]='\0';
-sprintf(string, "%i", 23);
-lcd_type(5, 8, string);
+//sprintf(string, "%i ", time);
+lcd_type(5, 7, string);
+//sprintf(string, "%i ", time);
+lcd_type(6, 7, string);
+//sprintf(string, "%i ", time);
+lcd_type(7, 7, string);
+//sprintf(string, "%i ", time);
+lcd_type(8, 7, string);
+
 //pH++;
 time++;
-//delay_ms(1);
+//delay_ms(100);
 };
 
-//while (1)
-// {
-//lcd_y_band(80, 110);
-//lcd_fill(31, 1, 1);
-// delay_ms(1000);
-//lcd_y_band(20, 50);
-//lcd_fill(31, 63, 31);
-// delay_ms(1000);
-//lcd_y_band(50, 80);
-//lcd_fill(1, 1, 31);
-// delay_ms(1000);
-//lcd_x_band(0, 128);
-//lcd_y_band(0, 128);
-//lcd_fill(1,1,1);
-//delay_ms(500);
-// }
+while (1)
+ {
+
+ }
 }
