@@ -9,7 +9,6 @@
 #define SPACE          2
 #define INTERVAL       2
 #define FONT_SIZE      1
-#define STRING_LENGHT  16
 
 unsigned int text_color_1=0xFF, text_color_2=0xFF, bg_color_1=0x0, bg_color_2=0x0;
 unsigned char column, sym_code;
@@ -22,7 +21,7 @@ void lcd_com(unsigned char command){
 }
 
 //отправить очередной байт после предшествующей команды lcd_com
-lcd_send(unsigned char byte){
+void lcd_send(unsigned char byte){
   DC=1;
   CS=0;
   spi(byte);
@@ -30,12 +29,12 @@ lcd_send(unsigned char byte){
   DC=0;
 }
 
-text_color(unsigned char red, unsigned char green, unsigned char blue){
+void text_color(unsigned char red, unsigned char green, unsigned char blue){
 text_color_1 = (red<<3) + (green>>3);
 text_color_2 = ((green & 0b00011111)<<5) + blue;
 }
 
-bg_color(unsigned char red, unsigned char green, unsigned char blue){
+void bg_color(unsigned char red, unsigned char green, unsigned char blue){
 bg_color_1 = (red<<3) + (green>>3);
 bg_color_2 = ((green & 0b00011111)<<5) + blue;
 }
@@ -124,6 +123,7 @@ lcd_x_band(8*x, 8*x+7);
  CS=1;
 } */
 
+/*
 //Функция - вывод в строку
 void lcd_type(unsigned char y, unsigned char x, unsigned char text[16]) {
   unsigned char i, posit, char_str, char_pix; 
@@ -148,7 +148,7 @@ void lcd_type(unsigned char y, unsigned char x, unsigned char text[16]) {
      DC=1;
      column=char_pix/2;
      for (char_str=0;char_str<CHAR_VER;char_str++) { //цикл отрисовки пикселей символа внутри каждого столбца 
-       if((ascii_ru[sym_code][column]) & (1<<(char_str>>1)))     //char_str делим на два с помощью сдвига (так быстрее)
+       if((ascii[sym_code][column]) & (1<<(char_str>>1)))     //char_str делим на два с помощью сдвига (так быстрее)
        {
         spi(text_color_1);
         spi(text_color_2);
@@ -164,20 +164,19 @@ void lcd_type(unsigned char y, unsigned char x, unsigned char text[16]) {
  DC=0;
  CS=1;
 }
+*/
 
-
-lcd_test_typechar(unsigned char char_code){
+void lcd_test_typechar(unsigned char char_code){
 unsigned char i, char_column, column_pix;
 lcd_fill(1,1,1);
 lcd_x_band(0, 127);
-lcd_y_band(0, 7);
+lcd_y_band(0, CHAR_HEIGHT-1);
    CS=0;
    spi(0x2C);                                                                                                
    DC=1;
- 
- for (char_column=1;char_column<9;char_column++) { //цикл отрисовки символа по столбцам
+ for (char_column=0;char_column<(CHAR_WIGHT);char_column++) { //цикл отрисовки символа по столбцам
    for (column_pix=0;column_pix<8;column_pix++){
-     if((ru1251[char_code-1][char_column]) & (1<<column_pix))
+     if((CHAR_ARRAY_NAME[char_code-2][2*char_column+1]) & (1<<column_pix))
        {
         spi(text_color_1);
         spi(text_color_2);
@@ -186,7 +185,20 @@ lcd_y_band(0, 7);
        {
         spi(bg_color_1);
         spi(bg_color_2);
+       } 
+   }
+   
+   for (column_pix=0;column_pix<(CHAR_HEIGHT-8);column_pix++){
+     if((CHAR_ARRAY_NAME[char_code-2][2*char_column+2]) & (1<<column_pix))
+       {
+        spi(text_color_1);
+        spi(text_color_2);
        }
+       else 
+       {
+        spi(bg_color_1);
+        spi(bg_color_2);
+       } 
    }   
  }
 
@@ -194,20 +206,32 @@ DC=0;
 CS=1;
 };
 
-lcd_typestring(unsigned char y, unsigned char x, unsigned char text[16]){
+void lcd_type(unsigned char y, unsigned char x, unsigned char text[16]){
 unsigned char i, char_column, column_pix, posit;
-lcd_y_band(8*y, 8*y+7);
+lcd_y_band(CHAR_HEIGHT*y, CHAR_HEIGHT*y+CHAR_HEIGHT-1);
 lcd_x_band(8*x, 127);
    CS=0;
    spi(0x2C);                                                                                                
    DC=1;
- for (posit=0; posit<(16); posit++){  //цикл вывода символов по очереди
-// DC=0;
-// lcd_x_band(CHAR_HOR*x+CHAR_HOR*posit, CHAR_HOR*x+CHAR_HOR-1+CHAR_HOR*posit);
+ for (posit=0; posit<(32-x); posit++){  //цикл вывода символов по очереди
+ if (text[posit] == 0) break; //если дошли до символа конца строки - прекращаем вывод, выходим из цикла
  sym_code=text[posit]-0x20;
-  for (char_column=1;char_column<9;char_column++) { //цикл отрисовки символа по столбцам
+  for (char_column=0; char_column<(CHAR_ARRAY_NAME[sym_code][0]); char_column++) { //цикл отрисовки символа по столбцам, ширина символа берется из массива ascii
    for (column_pix=0;column_pix<8;column_pix++){
-     if((ru1251[sym_code][char_column]) & (1<<column_pix))
+     if((CHAR_ARRAY_NAME[sym_code][2*char_column+1]) & (1<<column_pix))
+       {
+        spi(text_color_1);
+        spi(text_color_2);                 //c  CHAR_WIGHT
+       }
+       else 
+       {
+        spi(bg_color_1);
+        spi(bg_color_2);
+       } 
+   }
+   
+   for (column_pix=0;column_pix<(CHAR_HEIGHT-8);column_pix++){
+     if((CHAR_ARRAY_NAME[sym_code][2*char_column+2]) & (1<<column_pix))
        {
         spi(text_color_1);
         spi(text_color_2);
@@ -216,14 +240,15 @@ lcd_x_band(8*x, 127);
        {
         spi(bg_color_1);
         spi(bg_color_2);
-       }
+       } 
    }   
-  }
+  }  
  }
 DC=0;
 CS=1;
 };
 
+/*
 ////Функция - вывод в строку
 //void lcd_type(unsigned char y, unsigned char x, unsigned char text[16]) {
 //  unsigned char i, posit, char_str, char_pix; 
@@ -298,3 +323,5 @@ CS=1;
 // DC=0;
 // CS=1;
 //}
+
+*/
