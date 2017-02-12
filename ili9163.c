@@ -1,30 +1,26 @@
 /*******************************************************
 *******************************************************/
-
-#define CHAR_ARRAY_NAME verd_14
-#define BYTES_PER_CHAR 29  //ширина массива с растровым шрифтом, подключаемого ниже include-ом
-#define CHAR_HEIGHT 14//высота символа в пикселях...
-#define CHAR_WIGHT 14  // ... и его ширина
+//желтый текст на синем фоне 15,15,3; 1,1,2
+//желтый на коричневом 20,35,3;  5,3,1
 
 #include <mega328p.h>
-#include <spi.h>
-#include <delay.h>
-#include <stdio.h>
-#include <verd_14.h>
+#include <spi.h>    //SPI
+#include <delay.h>  //библиотека программных задержек
+#include <stdio.h>  //стандартная либа ввода-вывода Си
 
+#include <font_settings.h> //настроить используемый шрифт здесь, если стандартный планируется заменить
 #include <ili9163.h>
 
+unsigned int ovflw;
 
-unsigned int i;
-unsigned char string[16];
-
-unsigned int pH=5, time=0;
+// Timer 0 overflow interrupt service routine
+interrupt [TIM0_OVF] void timer0_ovf_isr(void)
+{
+ ovflw++;
+}
 
 void main(void)
 {
-CS=1;
-RST=1;
-
 // Input/Output Ports initialization
 DDRB=(0<<DDB7) | (0<<DDB6) | (1<<DDB5) | (0<<DDB4) | (1<<DDB3) | (1<<DDB2) | (1<<DDB1) | (1<<DDB0);
 PORTB=(0<<PORTB7) | (0<<PORTB6) | (0<<PORTB5) | (0<<PORTB4) | (0<<PORTB3) | (0<<PORTB2) | (1<<PORTB1) | (0<<PORTB0);
@@ -32,106 +28,69 @@ PORTB=(0<<PORTB7) | (0<<PORTB6) | (0<<PORTB5) | (0<<PORTB4) | (0<<PORTB3) | (0<<
 DDRD.7=1;
 
 // spi initialization Clock Rate: 4000,000 kHz MSB First
-SPCR=(0<<SPIE) | (1<<SPE) | (0<<DORD) | (1<<MSTR) | (1<<CPOL) | (0<<CPHA) | (0<<SPR1) | (0<<SPR0);
+SPCR=(1<<SPE) | (1<<MSTR) | (1<<CPOL);
 SPSR=(1<<SPI2X);
 
-//аппаратный сброс
-RST=0;
-delay_ms(10);
-RST=1;
-delay_ms(10);
+// Timer/Counter 0 initialization
+TCCR0B=(0<<WGM02) | (0<<CS02) | (1<<CS01) | (0<<CS00);
+// Timer/Counter 0 Interrupt(s) initialization
+TIMSK0=(0<<OCIE0B) | (0<<OCIE0A) | (1<<TOIE0);
 
-//display-on
-CS=0;
-spi(0x29);
-CS=1;
-
-//sleep-out
-lcd_com(0x11);
-
-//настройка режима направления заполнения экрана и порядка R-G-B
-//нормальное положение экрана - стороной со штырьками вверх
-lcd_com(0x36);
-lcd_send(0b11101000);
-
-//количество цветов (уст.65536 = 16 бит RGB)
-lcd_com(0x3A);
-lcd_send(0b01100101);
-
-  
-  DC=0;
-  CS=0;
-  spi(0x2C);                                                                                              
-  CS=1;  
-  DC=1;
-  CS=0;
-  for (i=0; i<24576; i++){        //16384 - для 18 бит, 12288 (24576) для 12 бит
-  spi(0b00000100); //Red
-  spi(0b00010100); //Green
-  spi(0b01000100); //Blue
-  }
-  DC=0;
-  CS=1; 
-  
+lcd_init();
 lcd_fill(1,1,1);
 
-text_color(20,20,5);
-bg_color(1,1,2);
+text_color(20,25,3);
+bg_color(5,3,1);
 
-////lcd_test_typechar(5);
-//sprintf(string, "                ");
-////while(1);
-//sprintf(string, "Уст. pH = 5.24");
-//lcd_test_typechar(string[0]-30);
-//lcd_type(3, 0, string);
+lcd_fill_str(0, 1, 1, 2);
+
+lcd_text(0,0,"Уст.");
+lcd_text(0,6,"рН = 6,50");
+
+lcd_fill_str(1, 1, 5, 1);
+
+lcd_text(1,0,"Факт.");
+lcd_text(1,6,"рН = 6,42");
+
+lcd_fill_str(2, 1, 1, 2);
+
+lcd_text(2,0,"Уст.");
+lcd_text(2,6,"t°=38.0°С");
+
+lcd_fill_str(3, 1, 5, 1);
+
+lcd_text(3,0,"Факт.");
+lcd_text(3,6,"t°=38.4°С");
+
+lcd_fill_str(4, 1, 1, 2);
+
+lcd_text(4,0,"Прошло");
+lcd_text(4,9,"45 мин");
+
+lcd_fill_str(5, 1, 5, 1);
+
+lcd_text(5,0,"Осталось");
+lcd_text(5,9,"15 мин");
+
+lcd_fill_str(6, 1, 1, 2);
+
+lcd_text(6,0,"Прогресс  75%%");
+
+lcd_fill_str(7, 1, 5, 1);
+
+lcd_text(7,0,"Погода хорошая");
+
+lcd_fill_str(8, 1, 1, 2);
+
+lcd_text(8,0,"Валюты в жопе");
 
 
-sprintf(string, "Уст. рН=");
-lcd_type(0, 0, string);
-sprintf(string, "Тек. pH=");
-lcd_type(1, 0, string);
-sprintf(string, "Уст. t'=      *С");
-lcd_type(2, 0, string);
-sprintf(string, "Тек. t'=      *С");
-lcd_type(3, 0, string);
-sprintf(string, "Время:");
-lcd_type(4, 0, string);
-sprintf(string, "Прогр.:");
-lcd_type(5, 0, string);
-sprintf(string, "Еще 1:");
-lcd_type(6, 0, string);
-sprintf(string, "Еще 2:");
-lcd_type(7, 0, string);
-sprintf(string, "Еще 3:");
-lcd_type(8, 0, string);
+// Global enable interrupts
+#asm("sei")
 
-while(1){
-sprintf(string, "%i ", time);
-lcd_type(0, 9, string);
-//sprintf(string, "%i ", time);
-lcd_type(1, 9, string);
-//sprintf(string, "%i ", time);
-lcd_type(2, 8, string);
-//sprintf(string, "%i ", time);
-lcd_type(3, 8, string);
-//sprintf(string, "%i ", time);
-lcd_type(4, 7, string);
-//sprintf(string, "%i ", time);
-lcd_type(5, 7, string);
-//sprintf(string, "%i ", time);
-lcd_type(6, 7, string);
-//sprintf(string, "%i ", time);
-lcd_type(7, 7, string);
-//sprintf(string, "%i ", time);
-lcd_type(8, 7, string);
 
-//pH++;
-time++;
-//delay_ms(100);
-};
+    while(1){
+    
+    };
 
-while (1)
- {
-
- }
 }
